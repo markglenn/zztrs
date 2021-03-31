@@ -4,24 +4,28 @@ extern crate num;
 #[macro_use]
 extern crate num_derive;
 
+mod color;
 mod elements;
+mod render;
+mod sidebar;
 mod world;
 
 use bracket_lib::prelude as Bracket;
 use Bracket::{BTerm, Console};
 
-use elements::{color::Color, ElementType};
+use color::Color;
+use elements::ElementType;
 
-use nom::is_a;
 use world::{
-    board::{Board, BOARD_HEIGHT, BOARD_WIDTH},
+    board::{BOARD_HEIGHT, BOARD_WIDTH},
     World, ZZTPoint,
 };
 
-struct State {
+pub struct State {
     pub world: World,
     pub current_board: usize,
     pub tick: usize,
+    pub sound_enabled: bool,
 }
 
 impl State {
@@ -30,6 +34,7 @@ impl State {
             world,
             current_board: 0,
             tick: 0,
+            sound_enabled: true,
         }
     }
 }
@@ -39,6 +44,7 @@ impl Bracket::GameState for State {
         ctx.cls();
         let board = &self.world.boards[self.current_board];
         self.tick += 1;
+        sidebar::draw(ctx, &self);
 
         for y in 0..BOARD_HEIGHT {
             for x in 0..BOARD_WIDTH {

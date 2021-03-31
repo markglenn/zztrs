@@ -1,9 +1,8 @@
-pub mod color;
 pub mod status_element;
 
 use crate::world::board::Tile;
 use crate::world::{board::Board, ZZTPoint};
-use color::Color;
+use crate::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive)]
 #[repr(u8)]
