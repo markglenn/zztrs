@@ -1,5 +1,8 @@
 pub mod color;
+pub mod status_element;
 
+use crate::world::board::Tile;
+use crate::world::{board::Board, ZZTPoint};
 use color::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive)]
@@ -61,282 +64,347 @@ pub enum ElementType {
     TextBlack,
 }
 
-#[derive(Debug)]
+pub type Glyph = u8;
+type GlyphFunc = fn(board: &Board, tile: &Tile, point: ZZTPoint, tick: usize) -> Glyph;
+
 pub struct Element {
     pub element_type: ElementType,
-    pub character: u8,
+    pub glyph: Glyph,
     pub color: Color,
+    pub glyph_func: Option<GlyphFunc>,
 }
 
-pub const ELEMENTS: Vec<Element> = vec![
+pub const ELEMENTS: [Element; 54] = [
     Element {
         element_type: ElementType::Empty,
-        character: 0x20,
-        color: Color::new(0x70),
+        glyph: 0x20,
+        color: Color::new(0x0F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::BoardEdge,
-        character: 0x20,
+        glyph: 0x00,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Messenger,
-        character: 0x20,
+        glyph: 0x20,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Monitor,
-        character: 0x20,
+        glyph: 0x20,
         color: Color::new(0x07),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Player,
-        character: 0x02,
+        glyph: 0x02,
         color: Color::new(0x1F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Ammo,
-        character: 0x84,
+        glyph: 0x84,
         color: Color::new(0x03),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Torch,
-        character: 0x9D,
+        glyph: 0x9D,
         color: Color::new(0x06),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Gem,
-        character: 0x04,
+        glyph: 0x04,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Key,
-        character: 0x0C,
+        glyph: 0x0C,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Door,
-        character: 0x0A,
+        glyph: 0x0A,
         color: Color::new(0xFE),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Scroll,
-        character: 0xE8,
+        glyph: 0xE8,
         color: Color::new(0x0F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Passage,
-        character: 0xF0,
+        glyph: 0xF0,
         color: Color::new(0xFE),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Duplicator,
-        character: 0xFA,
+        glyph: 0xFA,
         color: Color::new(0x0F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Bomb,
-        character: 0x0B,
+        glyph: 0x0B,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Energizer,
-        character: 0x7F,
+        glyph: 0x7F,
         color: Color::new(0x05),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Star,
-        character: 0x53,
+        glyph: 0x53,
         color: Color::new(0x0F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Clockwise,
-        character: 0x2F,
+        glyph: 0x2F,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Counter,
-        character: 0x5C,
+        glyph: 0x5C,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Bullet,
-        character: 0xF8,
+        glyph: 0xF8,
         color: Color::new(0x0F),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Water,
-        character: 0xB0,
+        glyph: 0xB0,
         color: Color::new(0xF9),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Forest,
-        character: 0xB0,
+        glyph: 0xB0,
         color: Color::new(0x20),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Solid,
-        character: 0xDB,
+        glyph: 0xDB,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Normal,
-        character: 0xB2,
+        glyph: 0xB2,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Breakable,
-        character: 0xB1,
+        glyph: 0xB1,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Boulder,
-        character: 0xFE,
+        glyph: 0xFE,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::SliderNS,
-        character: 0x12,
+        glyph: 0x12,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::SliderEW,
-        character: 0x1D,
+        glyph: 0x1D,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Fake,
-        character: 0xB2,
+        glyph: 0xB2,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Invisible,
-        character: 0xB0,
+        glyph: 0xB0,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::BlinkWall,
-        character: 0xCE,
+        glyph: 0xCE,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Transporter,
-        character: 0xC5,
+        glyph: 0xC5,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Line,
-        character: 0xCE,
+        glyph: 0xCE,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Ricochet,
-        character: 0x2A,
+        glyph: 0x2A,
         color: Color::new(0x0A),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::BlinkRayHorizontal,
-        character: 0xCD,
+        glyph: 0xCD,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Bear,
-        character: 0x99,
+        glyph: 0x99,
         color: Color::new(0x06),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Ruffian,
-        character: 0x05,
+        glyph: 0x05,
         color: Color::new(0x0D),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Object,
-        character: 0x02,
+        glyph: 0x02,
         color: Color::new(0xFF),
+        glyph_func: Some(object_glyph),
     },
     Element {
         element_type: ElementType::Slime,
-        character: 0x2A,
+        glyph: 0x2A,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Shark,
-        character: 0x5E,
+        glyph: 0x5E,
         color: Color::new(0x07),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::SpinningGun,
-        character: 0x18,
+        glyph: 0x18,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Pusher,
-        character: 0x10,
+        glyph: 0x10,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Lion,
-        character: 0xEA,
+        glyph: 0xEA,
         color: Color::new(0x0C),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Tiger,
-        character: 0xE3,
+        glyph: 0xE3,
         color: Color::new(0x0B),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::BlinkRayVertical,
-        character: 0xBA,
+        glyph: 0xBA,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Head,
-        character: 0xE9,
+        glyph: 0xE9,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Segment,
-        character: 0x4F,
+        glyph: 0x4F,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::Invalid,
-        character: 0x20,
+        glyph: 0x20,
         color: Color::new(0xFF),
+        glyph_func: None,
     },
     Element {
         element_type: ElementType::TextBlue,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x1F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextGreen,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x2F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextCyan,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x3F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextRed,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x4F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextPurple,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x5F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextBrown,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x6F),
+        glyph_func: Some(text_glyph),
     },
     Element {
         element_type: ElementType::TextBlack,
-        character: 0x20,
-        color: Color::new(0xFF),
+        glyph: 0x20,
+        color: Color::new(0x0F),
+        glyph_func: Some(text_glyph),
     },
 ];
+
+fn text_glyph(_board: &Board, tile: &Tile, _point: ZZTPoint, _tick: usize) -> Glyph {
+    tile.color
+}
+
+fn object_glyph(board: &Board, _tile: &Tile, point: ZZTPoint, _tick: usize) -> Glyph {
+    board.status_at(point).p1
+}

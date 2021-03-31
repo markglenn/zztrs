@@ -1,30 +1,39 @@
-mod board;
+pub mod board;
 mod header;
 
 use board::Board;
 use header::Header;
+use nom::multi::count;
 
 use nom::bytes::complete::take;
 use nom::combinator::{map, map_res};
 use nom::number::complete::le_u8;
 use nom::IResult;
 
-use std::fs::OpenOptions;
 use std::io;
 use std::io::Read;
+use std::{fs::OpenOptions, usize};
 
 #[derive(Debug)]
 pub struct World {
     pub header: Header,
+    pub boards: Vec<Board>,
+}
+
+#[derive(Clone, Copy)]
+pub struct ZZTPoint {
+    pub x: usize,
+    pub y: usize,
 }
 
 impl World {
     pub fn load(input: &[u8]) -> IResult<&[u8], World> {
         let (input, header) = Header::load(input)?;
         let (input, _skip) = take(233 as usize)(input)?;
-        let (input, _board) = Board::load(input)?;
 
-        Ok((input, World { header }))
+        let (input, boards) = count(Board::load, header.num_boards as usize)(input)?;
+
+        Ok((input, World { header, boards }))
     }
 
     pub fn load_file(filename: &str) -> Result<World, io::Error> {

@@ -4,43 +4,84 @@ extern crate num;
 #[macro_use]
 extern crate num_derive;
 
-mod element;
+mod elements;
 mod world;
 
 use bracket_lib::prelude as Bracket;
 use Bracket::{BTerm, Console};
 
-use element::color::Color;
-use element::ElementType;
+use elements::{color::Color, ElementType};
 
-use world::World;
+use nom::is_a;
+use world::{
+    board::{Board, BOARD_HEIGHT, BOARD_WIDTH},
+    World, ZZTPoint,
+};
 
 struct State {
-    pub elements: Vec<element::Element>,
+    pub world: World,
+    pub current_board: usize,
+    pub tick: usize,
+}
+
+impl State {
+    pub fn new<'a>(world: World) -> Self {
+        State {
+            world,
+            current_board: 0,
+            tick: 0,
+        }
+    }
 }
 
 impl Bracket::GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
-        let element = &self.elements[ElementType::Player as usize];
-        let foreground = element.color.foreground.unwrap_or(Color::WHITE);
-        let background = element.color.background.unwrap_or(Color::BLACK);
-
         ctx.cls();
+        let board = &self.world.boards[self.current_board];
+        self.tick += 1;
 
-        ctx.set(2, 2, foreground, background, element.character);
+        for y in 0..BOARD_HEIGHT {
+            for x in 0..BOARD_WIDTH {
+                let tile = &board.tiles[y][x];
+                let element = &elements::ELEMENTS[tile.element_id as usize];
+
+                let color = match element.element_type {
+                    ElementType::Empty
+                    | ElementType::TextBlue
+                    | ElementType::TextGreen
+                    | ElementType::TextCyan
+                    | ElementType::TextRed
+                    | ElementType::TextPurple
+                    | ElementType::TextBrown
+                    | ElementType::TextBlack => element.color,
+                    _ => Color::new(tile.color),
+                };
+
+                let glyph = match element.glyph_func {
+                    Some(func) => func(board, tile, ZZTPoint { x, y }, self.tick),
+                    _ => element.glyph,
+                };
+
+                ctx.set(
+                    x as i32,
+                    y as i32,
+                    color.foreground,
+                    color.background,
+                    glyph,
+                );
+            }
+        }
     }
 }
 
 fn main() {
-    let _world = World::load_file("priv/TOWN.ZZT").expect("Cannot load file");
+    let world = World::load_file("priv/TOWN.ZZT").expect("Cannot load file");
 
     let term = Bracket::BTermBuilder::vga(80, 25)
         .with_title("ZZTrs")
         .build();
 
-    let gs = State {
-        elements: element::ELEMENTS,
-    };
+    let gs = State::new(world);
 
     Bracket::main_loop(term, gs);
 }
