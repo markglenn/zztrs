@@ -1,5 +1,5 @@
-use crate::elements::status_element::StatusElement;
 use crate::world::{le_bool, prefixed_string};
+use crate::{elements::status_element::StatusElement, math::ZZTPoint};
 use nom::bytes::complete::take;
 use nom::error::{make_error, ErrorKind};
 use nom::multi::{count, length_data};
@@ -8,11 +8,9 @@ use nom::sequence::tuple;
 use nom::Err::Failure;
 use nom::IResult;
 
-use super::ZZTPoint;
-
 #[derive(Debug, Copy, Clone)]
 pub struct Tile {
-    pub element_id: u8,
+    pub element_id: usize,
     pub color: u8,
 }
 
@@ -22,9 +20,12 @@ impl Tile {
 
         Ok((
             input,
-            std::iter::repeat(Tile { element_id, color })
-                .take(count as usize)
-                .collect(),
+            std::iter::repeat(Tile {
+                element_id: element_id as usize,
+                color,
+            })
+            .take(count as usize)
+            .collect(),
         ))
     }
 
@@ -53,35 +54,37 @@ pub const BOARD_HEIGHT: usize = 25;
 #[derive(Debug)]
 pub struct Board {
     pub board_name: String,
-    pub tiles: Vec<Vec<Tile>>,
+    tiles: Vec<Vec<Tile>>,
 
     pub max_player_shots: u8,
     pub is_dark: bool,
-    pub exit_north: u8,
-    pub exit_south: u8,
-    pub exit_west: u8,
-    pub exit_east: u8,
+    pub exit_north: usize,
+    pub exit_south: usize,
+    pub exit_west: usize,
+    pub exit_east: usize,
     pub restart_on_zap: bool,
     pub message: String,
-    pub player_enter_x: u8,
-    pub player_enter_y: u8,
+    pub player_enter_x: usize,
+    pub player_enter_y: usize,
     pub timelimit: i16,
     pub status_elements: Vec<StatusElement>,
 }
 
 impl Board {
-    pub fn _tile_at(&self, point: ZZTPoint) -> &Tile {
-        &self.tiles[point.x][point.y]
-    }
-
-    pub fn status_at(&self, point: ZZTPoint) -> &StatusElement {
-        let x = point.x as u8 + 1;
-        let y = point.y as u8 + 1;
+    pub fn status_at(&self, location: ZZTPoint<usize>) -> &StatusElement {
+        let location = ZZTPoint {
+            x: location.x + 1,
+            y: location.y + 1,
+        };
 
         self.status_elements
             .iter()
-            .find(|&s| s.location_x == x as u8 && s.location_y == y as u8)
+            .find(|&s| s.location == location)
             .unwrap()
+    }
+
+    pub fn tile_at(&self, location: ZZTPoint<usize>) -> Tile {
+        self.tiles[location.y][location.x]
     }
 
     pub fn load(input: &[u8]) -> IResult<&[u8], Board> {
@@ -124,14 +127,14 @@ impl Board {
                 tiles,
                 max_player_shots,
                 is_dark,
-                exit_north,
-                exit_south,
-                exit_west,
-                exit_east,
+                exit_north: exit_north as usize,
+                exit_south: exit_south as usize,
+                exit_west: exit_west as usize,
+                exit_east: exit_east as usize,
                 restart_on_zap,
                 message,
-                player_enter_x,
-                player_enter_y,
+                player_enter_x: player_enter_x as usize,
+                player_enter_y: player_enter_y as usize,
                 timelimit,
                 status_elements,
             },

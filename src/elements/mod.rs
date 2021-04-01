@@ -1,8 +1,12 @@
 pub mod status_element;
 
-use crate::world::board::Tile;
-use crate::world::{board::Board, ZZTPoint};
+use rand::Rng;
+
+use crate::world::{board::Board, board::Tile};
 use crate::Color;
+use crate::{game, math::ZZTPoint};
+
+use self::status_element::StatusElement;
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive)]
 #[repr(u8)]
@@ -64,13 +68,16 @@ pub enum ElementType {
 }
 
 pub type Glyph = u8;
-type GlyphFunc = fn(board: &Board, tile: &Tile, point: ZZTPoint, tick: usize) -> Glyph;
+type GlyphFunc = fn(board: &Board, tile: Tile, location: ZZTPoint<usize>, tick: usize) -> Glyph;
+type TickFunc = fn(board: &mut Board, status: &StatusElement);
 
 pub struct Element {
     pub element_type: ElementType,
     pub glyph: Glyph,
     pub color: Color,
     pub glyph_func: Option<GlyphFunc>,
+    pub tick_func: Option<TickFunc>,
+    pub walkable: bool,
 }
 
 pub const ELEMENTS: [Element; 54] = [
@@ -79,331 +86,458 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0x20,
         color: Color::new(0x0F),
         glyph_func: None,
+        tick_func: None,
+        walkable: true,
     },
     Element {
         element_type: ElementType::BoardEdge,
         glyph: 0x00,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Messenger,
         glyph: 0x20,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Monitor,
         glyph: 0x20,
         color: Color::new(0x07),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Player,
         glyph: 0x02,
         color: Color::new(0x1F),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Ammo,
         glyph: 0x84,
         color: Color::new(0x03),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Torch,
         glyph: 0x9D,
         color: Color::new(0x06),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Gem,
         glyph: 0x04,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Key,
         glyph: 0x0C,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Door,
         glyph: 0x0A,
         color: Color::new(0xFE),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Scroll,
         glyph: 0xE8,
         color: Color::new(0x0F),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Passage,
         glyph: 0xF0,
         color: Color::new(0xFE),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Duplicator,
         glyph: 0xFA,
         color: Color::new(0x0F),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Bomb,
         glyph: 0x0B,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Energizer,
         glyph: 0x7F,
         color: Color::new(0x05),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Star,
         glyph: 0x53,
         color: Color::new(0x0F),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Clockwise,
         glyph: 0x2F,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Counter,
         glyph: 0x5C,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Bullet,
         glyph: 0xF8,
         color: Color::new(0x0F),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Water,
         glyph: 0xB0,
         color: Color::new(0xF9),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Forest,
         glyph: 0xB0,
         color: Color::new(0x20),
         glyph_func: None,
+        tick_func: None,
+        walkable: true,
     },
     Element {
         element_type: ElementType::Solid,
         glyph: 0xDB,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Normal,
         glyph: 0xB2,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Breakable,
         glyph: 0xB1,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Boulder,
         glyph: 0xFE,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::SliderNS,
         glyph: 0x12,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::SliderEW,
         glyph: 0x1D,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Fake,
         glyph: 0xB2,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: true,
     },
     Element {
         element_type: ElementType::Invisible,
         glyph: 0xB0,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::BlinkWall,
         glyph: 0xCE,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Transporter,
         glyph: 0xC5,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Line,
         glyph: 0xCE,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Ricochet,
         glyph: 0x2A,
         color: Color::new(0x0A),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::BlinkRayHorizontal,
         glyph: 0xCD,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Bear,
         glyph: 0x99,
         color: Color::new(0x06),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Ruffian,
         glyph: 0x05,
         color: Color::new(0x0D),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Object,
         glyph: 0x02,
         color: Color::new(0xFF),
         glyph_func: Some(object_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Slime,
         glyph: 0x2A,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Shark,
         glyph: 0x5E,
         color: Color::new(0x07),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::SpinningGun,
         glyph: 0x18,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Pusher,
         glyph: 0x10,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Lion,
         glyph: 0xEA,
         color: Color::new(0x0C),
         glyph_func: None,
+        tick_func: Some(lion_tick),
+        walkable: false,
     },
     Element {
         element_type: ElementType::Tiger,
         glyph: 0xE3,
         color: Color::new(0x0B),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::BlinkRayVertical,
         glyph: 0xBA,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Head,
         glyph: 0xE9,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Segment,
         glyph: 0x4F,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::Invalid,
         glyph: 0x20,
         color: Color::new(0xFF),
         glyph_func: None,
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextBlue,
         glyph: 0x20,
         color: Color::new(0x1F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextGreen,
         glyph: 0x20,
         color: Color::new(0x2F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextCyan,
         glyph: 0x20,
         color: Color::new(0x3F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextRed,
         glyph: 0x20,
         color: Color::new(0x4F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextPurple,
         glyph: 0x20,
         color: Color::new(0x5F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextBrown,
         glyph: 0x20,
         color: Color::new(0x6F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
     Element {
         element_type: ElementType::TextBlack,
         glyph: 0x20,
         color: Color::new(0x0F),
         glyph_func: Some(text_glyph),
+        tick_func: None,
+        walkable: false,
     },
 ];
 
-fn text_glyph(_board: &Board, tile: &Tile, _point: ZZTPoint, _tick: usize) -> Glyph {
+fn text_glyph(_board: &Board, tile: Tile, _location: ZZTPoint<usize>, _tick: usize) -> Glyph {
     tile.color
 }
 
-fn object_glyph(board: &Board, _tile: &Tile, point: ZZTPoint, _tick: usize) -> Glyph {
-    board.status_at(point).p1
+fn object_glyph(board: &Board, _tile: Tile, location: ZZTPoint<usize>, _tick: usize) -> Glyph {
+    board.status_at(location).p1
+}
+
+fn lion_tick(board: &mut Board, status: &StatusElement) {
+    let mut rng = rand::thread_rng();
+
+    let delta = if status.p1 < rng.gen_range(0..10) {
+        game::random_direction()
+    } else {
+        game::seek_direction(board, status.location)
+    };
+
+    let x = (status.location.x as i32 + delta.x) as usize;
+    let y = (status.location.y as i32 + delta.y) as usize;
+
+    let tile = board.tile_at(ZZTPoint { x, y });
+
+    if ELEMENTS[tile.element_id].walkable {
+    } else {
+    }
 }

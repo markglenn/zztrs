@@ -20,12 +20,6 @@ pub struct World {
     pub boards: Vec<Board>,
 }
 
-#[derive(Clone, Copy)]
-pub struct ZZTPoint {
-    pub x: usize,
-    pub y: usize,
-}
-
 impl World {
     pub fn load(input: &[u8]) -> IResult<&[u8], World> {
         let (input, header) = Header::load(input)?;

@@ -12,4 +12,5 @@ num = "0.4"
 num-derive = "0.3"
 num-traits = "0.2"
 bracket-lib = "0.7"
-ascii = "1.0"
+rand = "0.8"
+

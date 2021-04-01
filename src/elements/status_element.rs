@@ -7,10 +7,11 @@ use nom::number::complete::le_u8;
 use nom::sequence::tuple;
 use nom::IResult;
 
+use crate::math::ZZTPoint;
+
 #[derive(Debug)]
 pub struct StatusElement {
-    pub location_x: u8,
-    pub location_y: u8,
+    pub location: ZZTPoint<usize>,
     pub step_x: i16,
     pub step_y: i16,
     pub cycle: i16,
@@ -28,7 +29,7 @@ pub struct StatusElement {
 
 impl StatusElement {
     pub fn load(input: &[u8]) -> IResult<&[u8], StatusElement> {
-        let (input, (location_x, location_y)) = tuple((le_u8, le_u8))(input)?;
+        let (input, location) = ZZTPoint::<usize>::load(input)?;
         let (input, (step_x, step_y)) = tuple((le_i16, le_i16))(input)?;
 
         let (input, cycle) = le_i16(input)?;
@@ -54,8 +55,7 @@ impl StatusElement {
         Ok((
             input,
             StatusElement {
-                location_x,
-                location_y,
+                location,
                 step_x,
                 step_y,
                 cycle,
