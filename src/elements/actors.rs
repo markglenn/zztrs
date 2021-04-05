@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{components::Position, loader::board::Board};
+use crate::components::{Board, Position};
 
 use super::{status_element::StatusElement, ELEMENTS};
 

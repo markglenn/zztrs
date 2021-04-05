@@ -2,7 +2,6 @@ pub mod board;
 mod header;
 mod world;
 
-pub use board::Board;
 pub use header::Header;
 pub use world::World;
 

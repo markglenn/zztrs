@@ -5,6 +5,8 @@ use crate::{
 use bracket_lib::prelude::*;
 use specs::{Join, World, WorldExt};
 
+use super::components::board::draw_board;
+
 pub struct State {
     pub ecs: World,
 }
@@ -17,6 +19,8 @@ impl GameState for State {
         let renderables = self.ecs.read_storage::<Renderable>();
 
         sidebar::render(ctx, self);
+
+        draw_board(&self.ecs, ctx);
 
         for (pos, render) in (&positions, &renderables).join() {
             ctx.set(

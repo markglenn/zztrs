@@ -1,9 +1,11 @@
 use std::fs::OpenOptions;
 use std::io::{self, Read};
 
-use nom::{bytes::complete::take, multi::count, IResult};
+use nom::{bytes::complete::take, IResult};
 
-use super::{Board, Header};
+use crate::components::Board;
+
+use super::{board::load_board, Header};
 
 #[derive(Debug)]
 pub struct World {
@@ -14,9 +16,9 @@ pub struct World {
 impl World {
     pub fn load(input: &[u8]) -> IResult<&[u8], World> {
         let (input, header) = Header::load(input)?;
-        let (input, _skip) = take(233 as usize)(input)?;
 
-        let (input, boards) = count(Board::load, header.num_boards as usize)(input)?;
+        let (input, _skip) = take(233 as usize)(input)?;
+        let (input, boards) = nom::multi::count(load_board, header.num_boards as usize)(input)?;
 
         Ok((input, World { header, boards }))
     }

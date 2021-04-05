@@ -19,7 +19,7 @@ use game::State;
 use specs::{Builder, World, WorldExt};
 
 fn main() {
-    let _world = loader::World::load_file("priv/TOWN.ZZT").expect("Cannot load file");
+    let mut world = loader::World::load_file("priv/TOWN.ZZT").expect("Cannot load file");
 
     let term = Bracket::BTermBuilder::vga(80, 25)
         .with_title("ZZTrs")
@@ -41,6 +41,7 @@ fn main() {
         .build();
 
     gs.ecs.insert(player_entity);
+    gs.ecs.insert(world.boards.remove(0));
 
     Bracket::main_loop(term, gs);
 }

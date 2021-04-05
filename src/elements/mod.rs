@@ -1,11 +1,8 @@
-mod actors;
+// mod actors;
 pub mod status_element;
 
+use crate::components::{board::Tile, Board, Position};
 use crate::components::{Color, Glyph};
-use crate::{
-    components::Position,
-    loader::{board::Board, board::Tile},
-};
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive)]
 #[repr(u8)]
@@ -364,7 +361,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0x05,
         color: Color::new(0x0D),
         glyph_func: None,
-        tick_func: Some(actors::ruffian_tick),
+        tick_func: None, //Some(actors::ruffian_tick),
         walkable: false,
     },
     Element {
@@ -412,7 +409,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0xEA,
         color: Color::new(0x0C),
         glyph_func: None,
-        tick_func: Some(actors::lion_tick),
+        tick_func: None, //Some(actors::lion_tick),
         walkable: false,
     },
     Element {
@@ -420,7 +417,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0xE3,
         color: Color::new(0x0B),
         glyph_func: None,
-        tick_func: Some(actors::tiger_tick),
+        tick_func: None, //Some(actors::tiger_tick),
         walkable: false,
     },
     Element {
@@ -517,6 +514,7 @@ fn text_glyph(_board: &Board, tile: Tile, _location: Position, _tick: usize) -> 
     tile.color
 }
 
-fn object_glyph(board: &Board, _tile: Tile, location: Position, _tick: usize) -> Glyph {
-    board.status_at(location).p1
+fn object_glyph(_board: &Board, tile: Tile, _location: Position, _tick: usize) -> Glyph {
+    //board.status_at(location).p1
+    ELEMENTS[tile.element_id].glyph
 }
