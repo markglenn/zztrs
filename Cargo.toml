@@ -13,4 +13,5 @@ num-derive = "0.3"
 num-traits = "0.2"
 bracket-lib = "0.7"
 rand = "0.8"
-
+specs = "0.16"
+specs-derive = "0.4"

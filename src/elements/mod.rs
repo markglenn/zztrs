@@ -1,12 +1,11 @@
+mod actors;
 pub mod status_element;
 
-use rand::Rng;
-
-use crate::world::{board::Board, board::Tile};
-use crate::Color;
-use crate::{game, math::ZZTPoint};
-
-use self::status_element::StatusElement;
+use crate::components::{Color, Glyph};
+use crate::{
+    components::Position,
+    loader::{board::Board, board::Tile},
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive)]
 #[repr(u8)]
@@ -67,9 +66,8 @@ pub enum ElementType {
     TextBlack,
 }
 
-pub type Glyph = u8;
-type GlyphFunc = fn(board: &Board, tile: Tile, location: ZZTPoint<usize>, tick: usize) -> Glyph;
-type TickFunc = fn(board: &mut Board, status: &StatusElement);
+type GlyphFunc = fn(board: &Board, tile: Tile, location: Position, tick: usize) -> Glyph;
+type TickFunc = fn(board: &mut Board, status_id: usize);
 
 pub struct Element {
     pub element_type: ElementType,
@@ -366,7 +364,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0x05,
         color: Color::new(0x0D),
         glyph_func: None,
-        tick_func: None,
+        tick_func: Some(actors::ruffian_tick),
         walkable: false,
     },
     Element {
@@ -414,7 +412,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0xEA,
         color: Color::new(0x0C),
         glyph_func: None,
-        tick_func: Some(lion_tick),
+        tick_func: Some(actors::lion_tick),
         walkable: false,
     },
     Element {
@@ -422,7 +420,7 @@ pub const ELEMENTS: [Element; 54] = [
         glyph: 0xE3,
         color: Color::new(0x0B),
         glyph_func: None,
-        tick_func: None,
+        tick_func: Some(actors::tiger_tick),
         walkable: false,
     },
     Element {
@@ -515,29 +513,10 @@ pub const ELEMENTS: [Element; 54] = [
     },
 ];
 
-fn text_glyph(_board: &Board, tile: Tile, _location: ZZTPoint<usize>, _tick: usize) -> Glyph {
+fn text_glyph(_board: &Board, tile: Tile, _location: Position, _tick: usize) -> Glyph {
     tile.color
 }
 
-fn object_glyph(board: &Board, _tile: Tile, location: ZZTPoint<usize>, _tick: usize) -> Glyph {
+fn object_glyph(board: &Board, _tile: Tile, location: Position, _tick: usize) -> Glyph {
     board.status_at(location).p1
-}
-
-fn lion_tick(board: &mut Board, status: &StatusElement) {
-    let mut rng = rand::thread_rng();
-
-    let delta = if status.p1 < rng.gen_range(0..10) {
-        game::random_direction()
-    } else {
-        game::seek_direction(board, status.location)
-    };
-
-    let x = (status.location.x as i32 + delta.x) as usize;
-    let y = (status.location.y as i32 + delta.y) as usize;
-
-    let tile = board.tile_at(ZZTPoint { x, y });
-
-    if ELEMENTS[tile.element_id].walkable {
-    } else {
-    }
 }

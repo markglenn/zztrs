@@ -5,7 +5,7 @@ use crate::{
 };
 use bracket_lib::prelude::BTerm;
 
-fn clear_line(ctx: &mut BTerm, y: usize) {
+fn clear_line(ctx: &mut BTerm, y: i32) {
     render_ascii_string(ctx, 0x11, 60, y, b"\xB3                   ");
 }
 
@@ -15,7 +15,7 @@ pub fn clear(ctx: &mut BTerm) {
     }
 }
 
-pub fn draw(ctx: &mut BTerm, state: &State) {
+pub fn render(ctx: &mut BTerm, state: &State) {
     clear(ctx);
     clear_line(ctx, 0);
     clear_line(ctx, 1);
@@ -29,7 +29,7 @@ pub fn draw(ctx: &mut BTerm, state: &State) {
     render_in_game(ctx, state);
 }
 
-fn render_in_game(ctx: &mut BTerm, state: &State) {
+fn render_in_game(ctx: &mut BTerm, _state: &State) {
     render_string(ctx, 0x1E, 64, 7, " Health:");
     render_string(ctx, 0x1E, 64, 8, "   Ammo:");
     render_string(ctx, 0x1E, 64, 9, "Torches:");
@@ -68,9 +68,9 @@ fn render_in_game(ctx: &mut BTerm, state: &State) {
     render_string(ctx, 0x1F, 65, 22, " Pause");
     render_string(ctx, 0x70, 62, 23, " Q ");
     render_string(ctx, 0x1F, 65, 23, " Quit");
-    if state.sound_enabled {
-        render_string(ctx, 0x1F, 65, 15, " Be quiet");
-    } else {
-        render_string(ctx, 0x1F, 65, 15, " Be noisy");
-    }
+    //if state.sound_enabled {
+    render_string(ctx, 0x1F, 65, 15, " Be quiet");
+    // } else {
+    //     render_string(ctx, 0x1F, 65, 15, " Be noisy");
+    // }
 }

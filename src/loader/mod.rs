@@ -1,47 +1,24 @@
 pub mod board;
 mod header;
+mod world;
 
-use board::Board;
-use header::Header;
-use nom::multi::count;
+pub use board::Board;
+pub use header::Header;
+pub use world::World;
 
-use nom::bytes::complete::take;
-use nom::combinator::{map, map_res};
-use nom::number::complete::le_u8;
-use nom::IResult;
+use nom::{
+    bytes::complete::take,
+    combinator::{map, map_res},
+    number::complete::le_u8,
+    sequence::tuple,
+    IResult,
+};
 
-use std::io;
-use std::io::Read;
-use std::{fs::OpenOptions, usize};
+use crate::components::Position;
 
-#[derive(Debug)]
-pub struct World {
-    pub header: Header,
-    pub boards: Vec<Board>,
-}
-
-impl World {
-    pub fn load(input: &[u8]) -> IResult<&[u8], World> {
-        let (input, header) = Header::load(input)?;
-        let (input, _skip) = take(233 as usize)(input)?;
-
-        let (input, boards) = count(Board::load, header.num_boards as usize)(input)?;
-
-        Ok((input, World { header, boards }))
-    }
-
-    pub fn load_file(filename: &str) -> Result<World, io::Error> {
-        let mut file = OpenOptions::new().read(true).open(filename)?;
-
-        let mut contents: Vec<u8> = Vec::new();
-        file.read_to_end(&mut contents)?;
-
-        match World::load(&contents) {
-            Ok((_, world)) => Ok(world),
-            Err(_) => Err(io::Error::from(io::ErrorKind::InvalidData)),
-        }
-    }
-}
+pub const BOARD_WIDTH: usize = 60;
+pub const BOARD_HEIGHT: usize = 25;
+pub const BOARD_SIZE: usize = BOARD_WIDTH * BOARD_HEIGHT;
 
 pub fn prefixed_string(max_length: usize) -> impl FnMut(&[u8]) -> IResult<&[u8], String> {
     let check_max = move |v: u8| {
@@ -65,6 +42,30 @@ pub fn prefixed_string(max_length: usize) -> impl FnMut(&[u8]) -> IResult<&[u8],
 
 pub fn le_bool(input: &[u8]) -> IResult<&[u8], bool> {
     map(le_u8, |v| v != 0)(input)
+}
+
+pub fn u8_position(input: &[u8]) -> IResult<&[u8], Position> {
+    let (input, (x, y)) = tuple((le_u8, le_u8))(input)?;
+
+    Ok((
+        input,
+        Position {
+            x: x as i32,
+            y: y as i32,
+        },
+    ))
+}
+
+pub fn load_u8_position_offset_1(input: &[u8]) -> IResult<&[u8], Position> {
+    let (input, (x, y)) = tuple((le_u8, le_u8))(input)?;
+
+    Ok((
+        input,
+        Position {
+            x: x as i32 - 1,
+            y: y as i32 - 1,
+        },
+    ))
 }
 
 #[cfg(test)]

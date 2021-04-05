@@ -1,3 +1,5 @@
+use std::usize;
+
 use nom::bytes::complete::take;
 use nom::combinator::map_res;
 use nom::multi::count;
@@ -7,11 +9,11 @@ use nom::number::complete::le_u8;
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::math::ZZTPoint;
+use crate::{components::Position, loader::load_u8_position_offset_1};
 
 #[derive(Debug)]
 pub struct StatusElement {
-    pub location: ZZTPoint<usize>,
+    pub location: Position,
     pub step_x: i16,
     pub step_y: i16,
     pub cycle: i16,
@@ -20,7 +22,7 @@ pub struct StatusElement {
     pub p3: u8,
     pub follower: i16,
     pub leader: i16,
-    pub under_id: u8,
+    pub under_id: usize,
     pub under_color: u8,
     pub current_instruction: i16,
     pub length: i16,
@@ -29,7 +31,7 @@ pub struct StatusElement {
 
 impl StatusElement {
     pub fn load(input: &[u8]) -> IResult<&[u8], StatusElement> {
-        let (input, location) = ZZTPoint::<usize>::load(input)?;
+        let (input, location) = load_u8_position_offset_1(input)?;
         let (input, (step_x, step_y)) = tuple((le_i16, le_i16))(input)?;
 
         let (input, cycle) = le_i16(input)?;
@@ -64,7 +66,7 @@ impl StatusElement {
                 p3,
                 follower,
                 leader,
-                under_id,
+                under_id: under_id as usize,
                 under_color,
                 current_instruction,
                 length,

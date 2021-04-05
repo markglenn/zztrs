@@ -135,6 +135,6 @@ impl Color {
 
 impl From<u8> for Color {
     fn from(c: u8) -> Self {
-        Color::new(c)
+        Self::new(c)
     }
 }
