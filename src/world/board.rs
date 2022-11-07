@@ -47,7 +47,7 @@ fn load_tile_rle(input: &[u8]) -> IResult<&[u8], Vec<Tile>> {
     }
 }
 
-pub fn load_board(input: &[u8]) -> IResult<&[u8], Board> {
+pub fn load(input: &[u8]) -> IResult<&[u8], Board> {
     // Load the board data as a blob
     let (input, data) = length_data(le_u16)(input)?;
     let (_, board) = load_board_impl(data)?;

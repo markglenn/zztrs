@@ -1,7 +1,8 @@
-use bracket_lib::prelude::{BTerm, Console};
+use bracket_lib::prelude::BTerm;
 
 use crate::components::{Color, Glyph};
 
+/* Render an 8-bit ascii string (slice) to the console */
 pub fn render_ascii_string(ctx: &mut BTerm, color: u8, x: i32, y: i32, text: &[u8]) {
     let Color {
         foreground: fg,

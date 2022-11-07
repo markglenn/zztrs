@@ -1,16 +1,12 @@
-extern crate nom;
-extern crate num;
-
 #[macro_use]
 extern crate num_derive;
 
 mod components;
 mod elements;
 mod game;
-mod loader;
 mod render;
 mod sidebar;
-mod systems;
+mod world;
 
 use bracket_lib::prelude as Bracket;
 
@@ -19,11 +15,12 @@ use game::State;
 use specs::{Builder, World, WorldExt};
 
 fn main() {
-    let mut world = loader::World::load_file("priv/TOWN.ZZT").expect("Cannot load file");
+    let mut world = world::load_file("priv/TOWN.ZZT").expect("Cannot load file");
 
     let term = Bracket::BTermBuilder::vga(80, 25)
         .with_title("ZZTrs")
-        .build();
+        .build()
+        .unwrap();
 
     let mut gs = State { ecs: World::new() };
 
@@ -43,5 +40,5 @@ fn main() {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(world.boards.remove(0));
 
-    Bracket::main_loop(term, gs);
+    Bracket::main_loop(term, gs).unwrap();
 }

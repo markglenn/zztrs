@@ -1,8 +1,11 @@
 pub mod board;
-mod header;
 mod world;
 
-pub use header::Header;
+use std::{
+    fs::OpenOptions,
+    io::{self, Read},
+};
+
 pub use world::World;
 
 use nom::{
@@ -12,12 +15,45 @@ use nom::{
     sequence::tuple,
     IResult,
 };
+pub use world::load;
 
 use crate::components::Position;
 
 pub const BOARD_WIDTH: usize = 60;
 pub const BOARD_HEIGHT: usize = 25;
 pub const BOARD_SIZE: usize = BOARD_WIDTH * BOARD_HEIGHT;
+
+pub const NUM_KEYS: usize = 7;
+pub const NUM_FLAGS: usize = 10;
+
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive)]
+pub enum Keys {
+    Blue,
+    Green,
+    Cyan,
+    Red,
+    Purple,
+    Yellow,
+    White,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive)]
+pub enum WorldType {
+    ZZT = -1,      // *.ZZT
+    SuperZZT = -2, // *.SZT
+}
+
+pub fn load_file(filename: &str) -> Result<World, io::Error> {
+    let mut file = OpenOptions::new().read(true).open(filename)?;
+
+    let mut contents: Vec<u8> = Vec::new();
+    file.read_to_end(&mut contents)?;
+
+    match load(&contents) {
+        Ok((_, world)) => Ok(world),
+        Err(_) => Err(io::Error::from(io::ErrorKind::InvalidData)),
+    }
+}
 
 pub fn prefixed_string(max_length: usize) -> impl FnMut(&[u8]) -> IResult<&[u8], String> {
     let check_max = move |v: u8| {

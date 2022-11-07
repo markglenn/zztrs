@@ -9,7 +9,7 @@ use nom::number::complete::le_u8;
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::{components::Position, loader::load_u8_position_offset_1};
+use crate::{components::Position, world::load_u8_position_offset_1};
 
 #[derive(Debug)]
 pub struct StatusElement {

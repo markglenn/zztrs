@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 use specs::prelude::*;
 use specs_derive::Component;
 
-use crate::loader::BOARD_WIDTH;
+use crate::world::BOARD_WIDTH;
 
 #[derive(Clone, Copy, Component, Debug, PartialEq)]
 pub struct Position {
@@ -12,6 +12,7 @@ pub struct Position {
 }
 
 impl Position {
+    #[allow(dead_code)]
     pub fn to_index(&self) -> usize {
         (self.y as usize * BOARD_WIDTH) + self.x as usize
     }

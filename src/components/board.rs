@@ -1,9 +1,9 @@
-use bracket_lib::prelude::{BTerm, BaseMap, Console};
+use bracket_lib::prelude::{BTerm, BaseMap};
 use specs::World;
 
 use crate::{
     elements::{ElementType, ELEMENTS},
-    loader::BOARD_WIDTH,
+    world::BOARD_WIDTH,
 };
 
 use super::{Color, Position};
